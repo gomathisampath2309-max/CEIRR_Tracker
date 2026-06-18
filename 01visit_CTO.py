@@ -33,18 +33,18 @@ if get_as_dataframe is None or set_with_dataframe is None:
     raise ImportError("The gspread_dataframe package is required. Install it with pip install gspread-dataframe")
 
 # =====================================================
-# STEP 1: AUTHENTICATION (SERVICE ACCOUNT)
+# STEP 1: AUTHENTICATION (STREAMLIT SECRETS)
 # =====================================================
 
-SERVICE_ACCOUNT_FILE = "service_account.json"
+import streamlit as st
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE,
+creds = Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"],
     scopes=SCOPES
 )
 

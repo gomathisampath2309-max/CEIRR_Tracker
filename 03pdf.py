@@ -85,7 +85,7 @@ except Exception:
 DEST_SHEET_URL = "https://docs.google.com/spreadsheets/d/1z3ey_vJrTNtbLAPlzRXYWEJFRY4_-89nvJLwmSBXRfs/edit?usp=sharing"
 SHEET_NAME = "Database"
 
-SERVICE_ACCOUNT_FILE = "service_account.json"
+import streamlit as st
 
 visit_colors = {
     1: "#F2BE2D",
@@ -104,13 +104,12 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE,
+creds = Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"],
     scopes=SCOPES
 )
 
 gc = gspread.authorize(creds)
-
 
 # =====================================================
 # LOAD DATA

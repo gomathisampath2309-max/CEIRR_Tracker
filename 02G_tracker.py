@@ -43,15 +43,15 @@ if gspread is None or Credentials is None:
 # STEP 2: GOOGLE SHEETS AUTHENTICATION
 # =====================================================
 
-SERVICE_ACCOUNT_FILE = "service_account.json"
+import streamlit as st
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = Credentials.from_service_account_file(
-    "service_account.json",
+creds = Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"],
     scopes=SCOPES
 )
 
