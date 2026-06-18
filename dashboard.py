@@ -106,7 +106,7 @@ with col2:
 
 with col3:
 
-    st.subheader("PDF(Saturday 9:00 AM)")
+    st.subheader("PDF(Saturday 9:00 AM Email to All)")
 
     if st.button(
         "Generate PDF",
@@ -121,7 +121,7 @@ st.markdown("---")
 # Complete Process
 # ---------------------------------------------------
 
-st.subheader("Complete Weekly Process")
+st.subheader("Complete Weekly Process (Saturday 9:00 AM Email to All)")
 
 if st.button(
     "Run Complete Process",
