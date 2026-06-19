@@ -1167,11 +1167,11 @@ print(
 
 
 # =====================================================
-# STEP 18: UPDATE ONLY S.No, Screening ID, Incharge
+# STEP 18: UPDATE ONLY S.No, Screening ID, Recruitment ID, Incharge
 # =====================================================
 
 df_lab_update = df_partial[
-    ["S.No", "Screening ID", "Incharge"]
+    ["S.No", "Screening ID", "Recruitment ID", "Incharge"]
 ].copy()
 
 data_to_write = (
@@ -1180,9 +1180,9 @@ data_to_write = (
 )
 
 dest_sheet_lab.update(
-    range_name=f"A1:C{len(data_to_write)}",
+    range_name=f"A1:D{len(data_to_write)}",
     values=data_to_write
 )
 
-print("LAB sheet columns A:C updated")
+print("LAB sheet columns A:D updated")
 print(f"Rows written: {len(df_lab_update)}")
