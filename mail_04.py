@@ -5,7 +5,7 @@ from email.utils import make_msgid
 
 def send_mail(start_date, end_date, call_pdf, visit_pdf):
 
-    SENDER_EMAIL = "gomathisampath2309@gmail.com", 
+    SENDER_EMAIL = "gomathisampath2309@gmail.com" 
     RECEIVER_EMAIL = ["gomathisampath2309@gmail.com",
     "maheshmoorthy@cmcvellore.ac.in",
     "sangeetha.priya@cmcvellore.ac.in",
