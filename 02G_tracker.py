@@ -1167,22 +1167,31 @@ print(
 
 
 # =====================================================
-# STEP 18: UPDATE ONLY S.No, Screening ID, Recruitment ID, Incharge
+# STEP 18: UPDATE ONLY S.No, Screening ID, Incharge
 # =====================================================
-
+ 
 df_lab_update = df_partial[
-    ["S.No", "Screening ID", "Recruitment ID", "Incharge"]
+    ["S.No", "Screening ID", "Incharge"]
 ].copy()
-
+ 
+# ✅ CRITICAL FIX: Replace NaN with empty strings to avoid JSON serialization error
+df_lab_update = df_lab_update.fillna("")
+ 
+# Convert all values to strings to ensure clean output
+df_lab_update = df_lab_update.astype(str)
+ 
+# Replace 'nan' string values (from NaN conversion) with empty strings
+df_lab_update = df_lab_update.replace("nan", "")
+ 
 data_to_write = (
     [df_lab_update.columns.tolist()]
     + df_lab_update.values.tolist()
 )
-
+ 
 dest_sheet_lab.update(
-    range_name=f"A1:D{len(data_to_write)}",
+    range_name=f"A1:C{len(data_to_write)}",
     values=data_to_write
 )
-
+ 
 print("LAB sheet columns A:D updated")
 print(f"Rows written: {len(df_lab_update)}")
