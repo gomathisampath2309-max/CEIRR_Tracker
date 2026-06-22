@@ -1195,3 +1195,35 @@ dest_sheet_lab.update(
  
 print("LAB sheet columns A:D updated")
 print(f"Rows written: {len(df_lab_update)}")
+
+# =====================================================
+# STEP 19: UPDATE LAB COHORT FOLLOW-UP SHEET 
+# =====================================================
+# Filter only recruited participants (non-empty Recruitment ID)
+df_cohort_update = df_partial[
+    ["S.No", "Screening ID", "Recruitment ID", "Incharge"]
+].copy()
+
+# Keep only rows where Recruitment ID is not empty
+df_cohort_update = df_cohort_update[df_cohort_update["Recruitment ID"].notna() & 
+                                     (df_cohort_update["Recruitment ID"] != "")]
+
+# Reset S.No to 1, 2, 3, ... for recruited participants
+df_cohort_update["S.No"] = range(1, len(df_cohort_update) + 1)
+
+df_cohort_update = df_cohort_update.fillna("")
+df_cohort_update = df_cohort_update.astype(str)
+df_cohort_update = df_cohort_update.replace("nan", "")
+
+data_to_write_cohort = (
+    [df_cohort_update.columns.tolist()]
+    + df_cohort_update.values.tolist()
+)
+
+cohort_sheet.update(
+    range_name=f"A1:D{len(data_to_write_cohort)}",
+    values=data_to_write_cohort
+)
+
+print("LAB COHORT Follow-up sheet updated (Recruited only)")
+print(f"Rows written: {len(df_cohort_update)}")
