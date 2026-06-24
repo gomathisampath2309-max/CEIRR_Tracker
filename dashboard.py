@@ -15,6 +15,11 @@ st.set_page_config(
 
 BASE_DIR = Path(__file__).parent
 
+# Google Sheet destination ID extracted from your URLs
+# URL: https://docs.google.com/spreadsheets/d/1uEaBqs8DoSF4X88ERq6KfXo54Abj7qtft_0lx1dxaxU/edit?usp=sharing
+SPREADSHEET_ID = "1uEaBqs8DoSF4X88ERq6KfXo54Abj7qtft_0lx1dxaxU"
+DOWNLOAD_URL = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=xlsx"
+
 
 # ---------------------------------------------------
 # Function to run python scripts
@@ -86,7 +91,7 @@ with col1:
 
 
 # ---------------------------------------------------
-# Button 2
+# Button 2 (With Download Option)
 # ---------------------------------------------------
 
 with col2:
@@ -98,6 +103,15 @@ with col2:
         use_container_width=True
     ):
         run_script("02G_tracker.py")
+        
+    st.write("") # Tiny spacer
+
+    # Direct export link to download the Google Sheet as an Excel file (.xlsx)
+    st.link_button(
+        "📥 Download Tracker (Excel)",
+        DOWNLOAD_URL,
+        use_container_width=True
+    )
 
 
 # ---------------------------------------------------
@@ -106,7 +120,7 @@ with col2:
 
 with col3:
 
-    st.subheader("PDF(Sat 9 AM Mail to All)")
+    st.subheader("PDF(Sat 9 AM Send Mail to All)")
 
     if st.button(
         "Generate PDF",
