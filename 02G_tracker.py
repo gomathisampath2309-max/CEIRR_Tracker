@@ -42,7 +42,10 @@ if gspread is None or Credentials is None:
 # STEP 2: GOOGLE SHEETS AUTHENTICATION
 # =====================================================
 
-SERVICE_ACCOUNT_FILE = BASE_DIR / "service_account.json"
+SERVICE_ACCOUNT_FILE = BASE_DIR / "service_account.JSON"
+
+# Direct absolute path to your local Windows file
+SERVICE_ACCOUNT_FILE = Path(r"C:\Users\CMC\Desktop\SK\03 CIERR\CEIRR Tracker\service_account.JSON")
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
