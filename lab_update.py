@@ -47,16 +47,33 @@ else:
 if get_as_dataframe is None or set_with_dataframe is None:
     raise ImportError("The gspread_dataframe package is required. Install it with pip install gspread-dataframe")
 
-# =====================================================
-# STEP 1: AUTHENTICATION (SERVICE ACCOUNT)
-# =====================================================
+import streamlit as st
+import os
 
+# Updated robust authentication block
 SERVICE_ACCOUNT_FILE = "service_account.json"
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
+
+if "gcp_service_account" in st.secrets:
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=SCOPES
+    )
+else:
+    # If running locally on your desktop machine
+    local_path = "service_account.json"
+    if os.path.exists(local_path):
+        creds = Credentials.from_service_account_file(local_path, scopes=SCOPES)
+    else:
+        raise FileNotFoundError("Could not find Google credentials in Streamlit Secrets or local folder!")
+    
+# =====================================================
+# STEP 1: AUTHENTICATION (SERVICE ACCOUNT)
+# =====================================================
 
 # Check if service account file exists
 if not os.path.exists(SERVICE_ACCOUNT_FILE):
