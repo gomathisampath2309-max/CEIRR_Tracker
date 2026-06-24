@@ -3,61 +3,86 @@
 # =====================================================
 
 import pandas as pd
-import datetime as dt
-import numpy as np
-import re
-from pathlib import Path
+import os
+import importlib.util
+from typing import TYPE_CHECKING
+import streamlit as st
 
-# --- DEFINE BASE DIRECTORY HERE ---
-BASE_DIR = Path(__file__).parent.resolve()
+# Import gspread_formatting safely
+cellFormat = None  # type: ignore
+format_cell_range = None  # type: ignore
 
-try:
-    import gspread  # type: ignore[import]
-    from google.oauth2.service_account import Credentials  # type: ignore[import]
-    from gspread_dataframe import set_with_dataframe, get_as_dataframe  # type: ignore[import]
-    from gspread_formatting import CellFormat, format_cell_range  # type: ignore[import]
-except ModuleNotFoundError as e:
-    gspread = None
-    Credentials = None
-    CellFormat = None
-    def set_with_dataframe(*args, **kwargs):
-        raise ModuleNotFoundError("gspread-dataframe is required to set dataframes to Google Sheets")
-    def get_as_dataframe(*args, **kwargs):
-        raise ModuleNotFoundError("gspread-dataframe is required to read dataframes from Google Sheets")
-    def format_cell_range(*args, **kwargs):
-        return None
-    print(
-        "Warning: Missing required Google Sheets packages. "
-        "Install via pip: pip install gspread google-auth gspread-dataframe gspread-formatting"
-    )
+gsf_spec = importlib.util.find_spec("gspread_formatting")
+if gsf_spec is not None:
+    try:
+        gsf = importlib.import_module("gspread_formatting")
+        cellFormat = getattr(gsf, "cellFormat", None)
+        format_cell_range = getattr(gsf, "format_cell_range", None)
+    except Exception:
+        cellFormat = None  # type: ignore
+        format_cell_range = None  # type: ignore
 
-if gspread is None or Credentials is None:
-    raise ModuleNotFoundError(
-        "Missing required Google Sheets packages. "
-        "Install via pip: pip install gspread google-auth gspread-dataframe gspread-formatting"
-    )
+if TYPE_CHECKING:
+    import gspread  # type: ignore
+    from google.oauth2.service_account import Credentials  # type: ignore
+    from gspread_dataframe import get_as_dataframe, set_with_dataframe  # type: ignore
+else:
+    try:
+        import gspread
+    except Exception:
+        gspread = None  # type: ignore
+
+    try:
+        from google.oauth2.service_account import Credentials
+    except Exception:
+        Credentials = None  # type: ignore
+
+    try:
+        from gspread_dataframe import get_as_dataframe, set_with_dataframe
+    except Exception:
+        get_as_dataframe = None  # type: ignore
+        set_with_dataframe = None  # type: ignore
+
+if get_as_dataframe is None or set_with_dataframe is None:
+    raise ImportError("The gspread_dataframe package is required. Install it with pip install gspread-dataframe")
 
 
 # =====================================================
-# STEP 2: GOOGLE SHEETS AUTHENTICATION
+# STEP 1: AUTHENTICATION (STREAMLIT SECRETS / LOCAL FALLBACK)
 # =====================================================
-
-SERVICE_ACCOUNT_FILE = BASE_DIR / "service_account.JSON"
-
-# Direct absolute path to your local Windows file
-SERVICE_ACCOUNT_FILE = Path(r"C:\Users\CMC\Desktop\SK\03 CIERR\CEIRR Tracker\service_account.JSON")
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = Credentials.from_service_account_file(
-    str(SERVICE_ACCOUNT_FILE),
-    scopes=SCOPES
-)
+creds = None
+
+# 1. Try loading from Streamlit Secrets (Cloud Environment)
+try:
+    if "gcp_service_account" in st.secrets:
+        creds = Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"],
+            scopes=SCOPES
+        )
+except Exception:
+    # If st.secrets isn't configured or throws an error locally, ignore it and fall back
+    pass
+
+# 2. Fallback to local file if Secrets are missing (Local Desktop Environment)
+if creds is None:
+    local_path = "service_account.json"
+    if os.path.exists(local_path):
+        creds = Credentials.from_service_account_file(local_path, scopes=SCOPES)
+    else:
+        raise FileNotFoundError(
+            "❌ Could not find credentials!\n"
+            "Locally: Make sure 'service_account.json' is inside your project folder.\n"
+            "Cloud: Make sure 'gcp_service_account' is configured in Streamlit Secrets."
+        )
 
 gc = gspread.authorize(creds)
+print("✅ Authentication successful")
 
 
 # =====================================================
