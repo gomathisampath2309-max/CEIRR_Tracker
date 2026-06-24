@@ -1208,7 +1208,7 @@ format_cell_range(
 )
 
 
-print("SCREENING Call Tracker updated")
+print("Tracker updated")
 print(
     f"Successfully copied "
     f"{len(df_partial)} records"
