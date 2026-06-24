@@ -6,6 +6,7 @@ import pandas as pd
 import datetime as dt
 import numpy as np
 import re
+from pathlib import Path
 
 try:
     import gspread  # type: ignore[import]
@@ -43,7 +44,6 @@ if gspread is None or Credentials is None:
 # STEP 2: GOOGLE SHEETS AUTHENTICATION
 # =====================================================
 
-# Use BASE_DIR to make the path absolute relative to this script
 SERVICE_ACCOUNT_FILE = BASE_DIR / "service_account.json"
 
 SCOPES = [
@@ -51,7 +51,6 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-# Pass the absolute path string to the credentials method
 creds = Credentials.from_service_account_file(
     str(SERVICE_ACCOUNT_FILE),
     scopes=SCOPES
