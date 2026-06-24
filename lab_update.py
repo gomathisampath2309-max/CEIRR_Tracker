@@ -67,7 +67,7 @@ if not os.path.exists(SERVICE_ACCOUNT_FILE):
     )
 
 creds = Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE,
+    "service_account.json",
     scopes=SCOPES
 )
 
