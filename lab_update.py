@@ -75,21 +75,19 @@ else:
 # STEP 1: AUTHENTICATION (SERVICE ACCOUNT)
 # =====================================================
 
-# Check if service account file exists
-if not os.path.exists(SERVICE_ACCOUNT_FILE):
-    raise FileNotFoundError(
-        f"\n {SERVICE_ACCOUNT_FILE} not found!\n"
-        "Make sure you have saved the JSON credentials file as 'service_account.json'\n"
-        "in your project folder.\n"
-    )
+SERVICE_ACCOUNT_FILE = "service_account.json"
+
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
 
 creds = Credentials.from_service_account_file(
-    "service_account.json",
+    SERVICE_ACCOUNT_FILE,
     scopes=SCOPES
 )
 
 gc = gspread.authorize(creds)
-print("Authentication successful")
 
 # =====================================================
 # STEP 2: Configuration - Sheet URLs
