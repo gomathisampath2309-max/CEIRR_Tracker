@@ -5,32 +5,21 @@ Runs in Visual Studio Code (Local Environment)
 """
 
 import pandas as pd
-import os
-import importlib.util
 from typing import TYPE_CHECKING
 
-# Import gspread_formatting safely
-cellFormat = None  # type: ignore
-format_cell_range = None  # type: ignore
-
-gsf_spec = importlib.util.find_spec("gspread_formatting")
-if gsf_spec is not None:
-    try:
-        gsf = importlib.import_module("gspread_formatting")
-        cellFormat = getattr(gsf, "cellFormat", None)
-        format_cell_range = getattr(gsf, "format_cell_range", None)
-    except Exception:
-        cellFormat = None  # type: ignore
-        format_cell_range = None  # type: ignore
-
 if TYPE_CHECKING:
+    # Help static type checkers / linters recognize gspread, google auth, gspread_dataframe,
+    # and gspread_formatting during analysis
     import gspread  # type: ignore
     from google.oauth2.service_account import Credentials  # type: ignore
     from gspread_dataframe import get_as_dataframe, set_with_dataframe  # type: ignore
+    from gspread_formatting import cellFormat, format_cell_range  # type: ignore
 else:
     try:
         import gspread
     except Exception:
+        # Runtime: gspread may be unavailable in some environments (linting/CI).
+        # Defer import errors until execution where appropriate.
         gspread = None  # type: ignore
 
     try:
@@ -44,33 +33,16 @@ else:
         get_as_dataframe = None  # type: ignore
         set_with_dataframe = None  # type: ignore
 
+    try:
+        # optional formatting helpers
+        from gspread_formatting import cellFormat, format_cell_range
+    except Exception:
+        cellFormat = None  # type: ignore
+        format_cell_range = None  # type: ignore
+
 if get_as_dataframe is None or set_with_dataframe is None:
     raise ImportError("The gspread_dataframe package is required. Install it with pip install gspread-dataframe")
 
-import streamlit as st
-import os
-
-# Updated robust authentication block
-SERVICE_ACCOUNT_FILE = "service_account.json"
-
-SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-]
-
-if "gcp_service_account" in st.secrets:
-    creds = Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],
-        scopes=SCOPES
-    )
-else:
-    # If running locally on your desktop machine
-    local_path = "service_account.json"
-    if os.path.exists(local_path):
-        creds = Credentials.from_service_account_file(local_path, scopes=SCOPES)
-    else:
-        raise FileNotFoundError("Could not find Google credentials in Streamlit Secrets or local folder!")
-    
 # =====================================================
 # STEP 1: AUTHENTICATION (SERVICE ACCOUNT)
 # =====================================================
