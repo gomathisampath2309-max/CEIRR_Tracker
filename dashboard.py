@@ -79,10 +79,10 @@ with col1:
     st.subheader("SurveyCTO")
 
     if st.button(
-        "Update Visit Data",
+        "Update Lab sheet Data",
         use_container_width=True
     ):
-        run_script("01visit_CTO.py")
+        run_script("lab_update.py")
 
 
 # ---------------------------------------------------
@@ -129,7 +129,7 @@ if st.button(
 ):
 
     scripts = [
-        "01visit_CTO.py",
+        "lab_update.py",
         "02G_tracker.py",
         "03pdf.py"
     ]
