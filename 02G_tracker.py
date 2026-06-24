@@ -43,15 +43,15 @@ if gspread is None or Credentials is None:
 # STEP 2: GOOGLE SHEETS AUTHENTICATION
 # =====================================================
 
-import streamlit as st
+SERVICE_ACCOUNT_FILE = "service_account.json"
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"],
+creds = Credentials.from_service_account_file(
+    "service_account.json",
     scopes=SCOPES
 )
 
@@ -554,12 +554,12 @@ if "decision" in df_cohort.columns:
 # Clean dates
 if "Date of confirmed visit" in df_lab_dedup.columns:
     df_lab_dedup["Date of confirmed visit"] = pd.to_datetime(
-        df_lab_dedup["Date of confirmed visit"], errors="coerce"
+        df_lab_dedup["Date of confirmed visit"], format="mixed", errors="coerce"
     )
 
 if "date of confirmed visit" in df_cohort.columns:
     df_cohort["date of confirmed visit"] = pd.to_datetime(
-        df_cohort["date of confirmed visit"], errors="coerce"
+        df_cohort["date of confirmed visit"], format="mixed", errors="coerce"
     )
 
 screening_lookup = (
@@ -931,12 +931,76 @@ print(
     )
 )
 
+
+# =====================================================
+#  NEW EXTRACTOR LOGIC HERE
+# =====================================================
+
+def clean_id_series(series):
+    return series.astype(str).str.strip().str.replace(r'\.0$', '', regex=True)
+
+# Standardize IDs on our current working dataset
+df_partial["Screening ID"] = clean_id_series(df_partial["Screening ID"])
+
+# --- Extract Visit 1 (V1/D1) from Recruitment Sheet ---
+if "visit_1" in df_recruitment.columns and "date_enrol" in df_recruitment.columns:
+    df_recruitment["study_id"] = clean_id_series(df_recruitment["study_id"])
+    
+    df_rec_v1 = (
+        df_recruitment[df_recruitment["visit_1"] == 1]
+        .drop_duplicates(subset="study_id", keep="last")[["study_id", "date_enrol"]]
+        .rename(columns={"date_enrol": "(V1/D1) date"})
+    )
+    
+    df_partial = df_partial.merge(
+        df_rec_v1,
+        left_on="Screening ID",
+        right_on="study_id",
+        how="left"
+    )
+    if "study_id" in df_partial.columns:
+        df_partial.drop(columns=["study_id"], inplace=True)
+
+# --- Extract Visits 2-5 from Vaccination Sheet ---
+if "current_visit" in df_vaccination.columns and "visit_date" in df_vaccination.columns:
+    df_vaccination["study_id"] = clean_id_series(df_vaccination["study_id"])
+    
+    # Using Code 1's preferred naming schema with the /S indicators
+    visit_column_map = {
+        2: "(V2/D2) date",
+        3: "(V3/S) date",
+        4: "(V4/D3) date",
+        5: "(V5/S) date"
+    }
+    
+    for visit_no, col_name in visit_column_map.items():
+        df_visit = (
+            df_vaccination[df_vaccination["current_visit"] == visit_no]
+            .drop_duplicates(subset="study_id", keep="last")[["study_id", "visit_date"]]
+            .rename(columns={"visit_date": col_name})
+        )
+        
+        if not df_visit.empty:
+            df_partial = df_partial.merge(
+                df_visit,
+                left_on="Screening ID",
+                right_on="study_id",
+                how="left"
+            )
+            if "study_id" in df_partial.columns:
+                df_partial.drop(columns=["study_id"], inplace=True)
+
 # =====================================================
 # STEP 16: WRITE SCREENING CALL TRACKER
 # =====================================================
 date_cols = [
     "Date of Collection",
     "Date of Recruitment",
+    "(V1/D1) date",
+    "(V2/D2) date",
+    "(V3/S) date",
+    "(V4/D3) date",
+    "(V5/S) date",
     "Visit 1 - 1D Notification",
     "Visit 1 - Dose 1",
     "Aravind Available date1",
@@ -982,44 +1046,8 @@ for col in date_cols:
             errors="coerce"
         ).dt.date
 
-# =====================================================
-# PRESERVE CAPTURED VISIT DATE COLUMNS
-# =====================================================
 
-df_tracker_existing = get_as_dataframe(dest_sheet).dropna(how="all")
 
-df_tracker_existing.columns = (
-    df_tracker_existing.columns
-    .astype(str)
-    .str.strip()
-)
-
-tracker_preserve_cols = [
-    "Screening ID",
-    "(V1/D1) date",
-    "(V2/D2) date",
-    "(V3/S) date",
-    "(V4/D3) date",
-    "(V5/S) date",
-]
-
-existing_cols = [
-    c for c in tracker_preserve_cols
-    if c in df_tracker_existing.columns
-]
-
-if existing_cols:
-    df_tracker_preserve = (
-        df_tracker_existing[existing_cols]
-        .drop_duplicates("Screening ID", keep="last")
-    )
-
-    df_partial = df_partial.merge(
-        df_tracker_preserve,
-        on="Screening ID",
-        how="left"
-    )
-        
 # =====================================================
 # FINAL COLUMN ORDER FIX (IMPORTANT)
 # =====================================================
@@ -1164,66 +1192,3 @@ print(
     f"Successfully copied "
     f"{len(df_partial)} records"
 )
-
-
-# =====================================================
-# STEP 18: UPDATE ONLY S.No, Screening ID, Incharge
-# =====================================================
- 
-df_lab_update = df_partial[
-    ["S.No", "Screening ID", "Incharge"]
-].copy()
- 
-# ✅ CRITICAL FIX: Replace NaN with empty strings to avoid JSON serialization error
-df_lab_update = df_lab_update.fillna("")
- 
-# Convert all values to strings to ensure clean output
-df_lab_update = df_lab_update.astype(str)
- 
-# Replace 'nan' string values (from NaN conversion) with empty strings
-df_lab_update = df_lab_update.replace("nan", "")
- 
-data_to_write = (
-    [df_lab_update.columns.tolist()]
-    + df_lab_update.values.tolist()
-)
- 
-dest_sheet_lab.update(
-    range_name=f"A1:C{len(data_to_write)}",
-    values=data_to_write
-)
- 
-print("LAB sheet columns A:D updated")
-print(f"Rows written: {len(df_lab_update)}")
-
-# =====================================================
-# STEP 19: UPDATE LAB COHORT FOLLOW-UP SHEET 
-# =====================================================
-# Filter only recruited participants (non-empty Recruitment ID)
-df_cohort_update = df_partial[
-    ["S.No", "Screening ID", "Recruitment ID", "Incharge"]
-].copy()
-
-# Keep only rows where Recruitment ID is not empty
-df_cohort_update = df_cohort_update[df_cohort_update["Recruitment ID"].notna() & 
-                                     (df_cohort_update["Recruitment ID"] != "")]
-
-# Reset S.No to 1, 2, 3, ... for recruited participants
-df_cohort_update["S.No"] = range(1, len(df_cohort_update) + 1)
-
-df_cohort_update = df_cohort_update.fillna("")
-df_cohort_update = df_cohort_update.astype(str)
-df_cohort_update = df_cohort_update.replace("nan", "")
-
-data_to_write_cohort = (
-    [df_cohort_update.columns.tolist()]
-    + df_cohort_update.values.tolist()
-)
-
-cohort_sheet.update(
-    range_name=f"A1:D{len(data_to_write_cohort)}",
-    values=data_to_write_cohort
-)
-
-print("LAB COHORT Follow-up sheet updated (Recruited only)")
-print(f"Rows written: {len(df_cohort_update)}")
