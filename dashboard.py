@@ -17,7 +17,7 @@ BASE_DIR = Path(__file__).parent
 
 # Google Sheet destination ID extracted from your URLs
 # URL: https://docs.google.com/spreadsheets/d/1uEaBqs8DoSF4X88ERq6KfXo54Abj7qtft_0lx1dxaxU/edit?usp=sharing
-SPREADSHEET_ID = "1uEaBqs8DoSF4X88ERq6KfXo54Abj7qtft_0lx1dxaxU"
+SPREADSHEET_ID = "1z3ey_vJrTNtbLAPlzRXYWEJFRY4_-89nvJLwmSBXRfs"
 DOWNLOAD_URL = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=xlsx"
 
 
