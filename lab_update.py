@@ -78,7 +78,7 @@ else:
 # Check if service account file exists
 if not os.path.exists(SERVICE_ACCOUNT_FILE):
     raise FileNotFoundError(
-        f"\n❌ {SERVICE_ACCOUNT_FILE} not found!\n"
+        f"\n {SERVICE_ACCOUNT_FILE} not found!\n"
         "Make sure you have saved the JSON credentials file as 'service_account.json'\n"
         "in your project folder.\n"
     )
@@ -89,7 +89,7 @@ creds = Credentials.from_service_account_file(
 )
 
 gc = gspread.authorize(creds)
-print("✅ Authentication successful")
+print("Authentication successful")
 
 # =====================================================
 # STEP 2: Configuration - Sheet URLs
@@ -125,10 +125,10 @@ def format_sheet(sheet, num_cols, num_rows):
             format_cell_range(sheet, f"A1:{last_col}{num_rows+1}", fmt)
             return True
         except Exception as fmt_error:
-            print(f"⚠️  Formatting skipped: {str(fmt_error)}")
+            print(f"Formatting skipped: {str(fmt_error)}")
             return False
     else:
-        print("⚠️  gspread_formatting not available - skipping formatting")
+        print("gspread_formatting not available - skipping formatting")
         return False
 
 
@@ -143,21 +143,21 @@ def clean_id_series(series):
 def update_screening_sheet():
     """Update SCREENING sheet with basic screening data"""
     print("\n" + "="*70)
-    print("📋 UPDATING SCREENING SHEET")
+    print("PDATING SCREENING SHEET")
     print("="*70)
     
     try:
         # Open sheets
-        print("📂 Opening SCREENING source sheet...")
+        print("Opening SCREENING source sheet...")
         screening_sheet = gc.open_by_url(SCREENING_SHEET_URL).worksheet("data")
         dest_screening = gc.open_by_url(DEST_SHEET_URL_lab).worksheet("SCREENING")
-        print("✅ Sheets opened successfully")
+        print("Sheets opened successfully")
         
         # Read source
-        print("📥 Reading screening source data...")
+        print("Reading screening source data...")
         df_source = get_as_dataframe(screening_sheet).dropna(how="all")
         df_source.columns = df_source.columns.str.strip().str.lower()
-        print(f"✅ Read {len(df_source)} records from source")
+        print(f"Read {len(df_source)} records from source")
         
         # Column mapping
         columns_map = {
@@ -192,7 +192,7 @@ def update_screening_sheet():
         df_partial.insert(0, "S.No", range(1, len(df_partial) + 1))
         
         # Preserve existing user-entered data
-        print("📥 Reading existing SCREENING sheet data...")
+        print("Reading existing SCREENING sheet data...")
         try:
             df_existing = get_as_dataframe(dest_screening).dropna(how="all")
             if not df_existing.empty and len(df_existing) > 0:
@@ -207,11 +207,11 @@ def update_screening_sheet():
                         existing_map = dict(zip(df_existing["Screening ID"], df_existing[col]))
                         df_partial[col] = df_partial["Screening ID"].map(existing_map).fillna("")
                 
-                print(f"✅ Preserved existing user data from {len(df_existing)} records")
+                print(f"Preserved existing user data from {len(df_existing)} records")
             else:
-                print("⚠️  No existing data found - columns will be empty for new entries")
+                print("No existing data found - columns will be empty for new entries")
         except Exception as e:
-            print(f"⚠️  Could not read existing data: {str(e)}")
+            print(f"Could not read existing data: {str(e)}")
         
         # Reorder columns
         df_lab_export = df_partial[[
@@ -227,7 +227,7 @@ def update_screening_sheet():
         ]]
         
         # Write to sheet
-        print("📤 Writing to SCREENING sheet...")
+        print("Writing to SCREENING sheet...")
         dest_screening.clear()
         set_with_dataframe(dest_screening, df_lab_export, include_index=False)
         
@@ -235,13 +235,13 @@ def update_screening_sheet():
         format_sheet(dest_screening, len(df_lab_export.columns), len(df_lab_export))
         
         # Success message
-        print("✅ SCREENING sheet updated successfully!")
-        print(f"   📦 Rows: {len(df_lab_export)} | Columns: {len(df_lab_export.columns)}")
+        print("SCREENING sheet updated successfully!")
+        print(f"Rows: {len(df_lab_export)} | Columns: {len(df_lab_export.columns)}")
         
         return True
         
     except Exception as e:
-        print(f"❌ Error updating SCREENING sheet: {str(e)}")
+        print(f"Error updating SCREENING sheet: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
@@ -253,20 +253,20 @@ def update_screening_sheet():
 def update_cohort_sheet():
     """Update COHORT Follow-up sheet with visit dates"""
     print("\n" + "="*70)
-    print("📋 UPDATING COHORT FOLLOW-UP SHEET")
+    print("UPDATING COHORT FOLLOW-UP SHEET")
     print("="*70)
     
     try:
         # Open sheets
-        print("📂 Opening all source sheets...")
+        print("Opening all source sheets...")
         screening_sheet = gc.open_by_url(SCREENING_SHEET_URL).worksheet("data")
         recruitment_sheet = gc.open_by_url(RECRUITMENT_SHEET_URL).worksheet("data")
         vaccination_sheet = gc.open_by_url(VACCINATION_SHEET_URL).worksheet("data")
         dest_cohort = gc.open_by_url(DEST_SHEET_URL_lab).worksheet("COHORT Follow-up")
-        print("✅ Sheets opened successfully")
+        print("Sheets opened successfully")
         
         # Read all source data
-        print("📥 Reading source data...")
+        print("Reading source data...")
         df_screening = get_as_dataframe(screening_sheet).dropna(how="all")
         df_screening.columns = df_screening.columns.str.strip().str.lower()
         
@@ -276,12 +276,12 @@ def update_cohort_sheet():
         df_vaccination = get_as_dataframe(vaccination_sheet).dropna(how="all")
         df_vaccination.columns = df_vaccination.columns.str.strip().str.lower()
         
-        print(f"✅ Read {len(df_screening)} screening records")
-        print(f"✅ Read {len(df_recruitment)} recruitment records")
-        print(f"✅ Read {len(df_vaccination)} vaccination records")
+        print(f"Read {len(df_screening)} screening records")
+        print(f"Read {len(df_recruitment)} recruitment records")
+        print(f"Read {len(df_vaccination)} vaccination records")
         
         # Build base dataframe from RECRUITMENT sheet (ONLY recruitment records)
-        print("🔨 Building base dataframe from RECRUITMENT records...")
+        print("Building base dataframe from RECRUITMENT records...")
         df_recruitment["study_id"] = clean_id_series(df_recruitment["study_id"])
         
         # Identify the correct Recruitment ID column from the recruitment sheet
@@ -294,7 +294,7 @@ def update_cohort_sheet():
         df_cohort.rename(columns={"study_id": "Screening ID", rec_id_col: "Recruitment ID"}, inplace=True)
         
         # Add Incharge from SCREENING sheet
-        print("📋 Adding Incharge from SCREENING sheet...")
+        print("Adding Incharge from SCREENING sheet...")
         df_screening_data = df_screening[["study_id", "sample_col_str"]].copy()
         df_screening_data["study_id"] = clean_id_series(df_screening_data["study_id"])
         df_screening_data = df_screening_data.drop_duplicates(subset="study_id", keep="first")
@@ -317,7 +317,7 @@ def update_cohort_sheet():
         df_cohort["Date of confirmed visit"] = ""
         
         # Extract V1/D1 dates from RECRUITMENT sheet
-        print("📅 Extracting Visit 1 (V1/D1) dates...")
+        print("Extracting Visit 1 (V1/D1) dates...")
         df_rec_v1 = (
             df_recruitment[df_recruitment["visit_1"] == 1]
             .drop_duplicates(subset="study_id", keep="last")[["study_id", "date_enrol"]]
@@ -343,7 +343,7 @@ def update_cohort_sheet():
         }
         
         for visit_no, col_name in visit_column_map.items():
-            print(f"📅 Extracting Visit {visit_no}...")
+            print(f"Extracting Visit {visit_no}...")
             df_vaccination["study_id"] = clean_id_series(df_vaccination["study_id"])
             df_visit = (
                 df_vaccination[df_vaccination["current_visit"] == visit_no]
@@ -363,7 +363,7 @@ def update_cohort_sheet():
                     df_cohort.drop(columns=["study_id"], inplace=True)
             else:
                 df_cohort[col_name] = ""
-                print(f"⚠️  No records for Visit {visit_no}")
+                print(f"No records for Visit {visit_no}")
         
         # Add S.No
         df_cohort.insert(0, "S.No", range(1, len(df_cohort) + 1))
@@ -388,7 +388,7 @@ def update_cohort_sheet():
         df_cohort_export = df_cohort[[col for col in required_columns if col in df_cohort.columns]].copy()
         
         # Preserve existing user-entered data securely
-        print("📥 Reading existing COHORT data...")
+        print("Reading existing COHORT data...")
         try:
             df_existing = get_as_dataframe(dest_cohort).dropna(how="all")
             if not df_existing.empty and len(df_existing) > 0:
@@ -402,14 +402,14 @@ def update_cohort_sheet():
                         existing_map = dict(zip(df_existing["Screening ID"], df_existing[col]))
                         df_cohort_export[col] = df_cohort_export["Screening ID"].map(existing_map).fillna("")
                 
-                print(f"✅ Preserved existing user data from {len(df_existing)} records")
+                print(f"Preserved existing user data from {len(df_existing)} records")
             else:
-                print("⚠️  No existing data found - columns will be empty for new entries")
+                print("No existing data found - columns will be empty for new entries")
         except Exception as e:
-            print(f"⚠️  Could not read existing data: {str(e)}")
+            print(f"Could not read existing data: {str(e)}")
         
         # Write back to destinations
-        print("📤 Writing to COHORT Follow-up sheet...")
+        print("Writing to COHORT Follow-up sheet...")
         dest_cohort.clear()
         set_with_dataframe(dest_cohort, df_cohort_export, include_index=False)
         
@@ -417,13 +417,13 @@ def update_cohort_sheet():
         format_sheet(dest_cohort, len(df_cohort_export.columns), len(df_cohort_export))
         
         # Success summary
-        print("✅ COHORT Follow-up sheet updated successfully!")
-        print(f"   📦 Rows: {len(df_cohort_export)} | Columns: {len(df_cohort_export.columns)}")
+        print("COHORT Follow-up sheet updated successfully!")
+        print(f"Rows: {len(df_cohort_export)} | Columns: {len(df_cohort_export.columns)}")
         
         return True
         
     except Exception as e:
-        print(f"❌ Error updating COHORT sheet: {str(e)}")
+        print(f"Error updating COHORT sheet: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
@@ -435,7 +435,7 @@ def update_cohort_sheet():
 def main():
     """Run both sheet updates"""
     print("\n" + "="*70)
-    print("🚀 CEIRR DATA SYNC - COMPLETE")
+    print("CEIRR DATA SYNC - COMPLETE")
     print("="*70)
     
     success_screening = update_screening_sheet()
@@ -444,19 +444,19 @@ def main():
     # Final summary
     print("\n" + "="*70)
     if success_screening and success_cohort:
-        print("✅ ALL SHEETS UPDATED SUCCESSFULLY!")
+        print("ALL SHEETS UPDATED SUCCESSFULLY!")
         print("="*70)
-        print("📊 Summary:")
-        print("   ✅ SCREENING sheet updated")
-        print("   ✅ COHORT Follow-up sheet updated")
+        print("Summary:")
+        print("SCREENING sheet updated")
+        print("COHORT Follow-up sheet updated")
         return True
     else:
-        print("⚠️  SOME UPDATES FAILED")
+        print("SOME UPDATES FAILED")
         print("="*70)
         if not success_screening:
-            print("   ❌ SCREENING sheet failed")
+            print("SCREENING sheet failed")
         if not success_cohort:
-            print("   ❌ COHORT Follow-up sheet failed")
+            print("COHORT Follow-up sheet failed")
         return False
 
 
