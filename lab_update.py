@@ -439,10 +439,10 @@ def main():
     success_cohort = update_cohort_sheet()
     
     # Final summary
-    print("\n" + "="*70)
+    # print("\n" + "="*70)
     if success_screening and success_cohort:
         print("ALL SHEETS UPDATED SUCCESSFULLY!")
-        print("="*70)
+        # print("="*70)
         print("Summary:")
         print("SCREENING sheet updated")
         print("COHORT Follow-up sheet updated")
