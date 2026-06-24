@@ -106,7 +106,7 @@ with col2:
 
 with col3:
 
-    st.subheader("PDF(Sat 9 AM Send Mail to All)")
+    st.subheader("PDF(Sat 9 AM Mail to All)")
 
     if st.button(
         "Generate PDF",
