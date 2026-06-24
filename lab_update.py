@@ -58,18 +58,30 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-if "gcp_service_account" in st.secrets:
-    creds = Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],
-        scopes=SCOPES
-    )
-else:
-    # If running locally on your desktop machine
+creds = None
+
+# 1. Try loading from Streamlit Secrets (Cloud Environment)
+try:
+    if "gcp_service_account" in st.secrets:
+        creds = Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"],
+            scopes=SCOPES
+        )
+except Exception:
+    # If st.secrets isn't configured or throws an error locally, ignore it and fall back
+    pass
+
+# 2. Fallback to local file if Secrets are missing (Local Desktop Environment)
+if creds is None:
     local_path = "service_account.json"
     if os.path.exists(local_path):
         creds = Credentials.from_service_account_file(local_path, scopes=SCOPES)
     else:
-        raise FileNotFoundError("Could not find Google credentials in Streamlit Secrets or local folder!")
+        raise FileNotFoundError(
+            "❌ Could not find credentials!\n"
+            "Locally: Make sure 'service_account.json' is inside your project folder.\n"
+            "Cloud: Make sure 'gcp_service_account' is configured in Streamlit Secrets."
+        )
 
 gc = gspread.authorize(creds)
 print("✅ Authentication successful")
