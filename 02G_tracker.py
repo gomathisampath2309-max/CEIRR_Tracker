@@ -1,53 +1,42 @@
 # =====================================================
-# STEP 1: IMPORT LIBRARIES & SETUP BASE DIRECTORY
+# STEP 1: IMPORT LIBRARIES
 # =====================================================
 
 import pandas as pd
-import os
-import importlib.util
-from typing import TYPE_CHECKING
-import streamlit as st
-import datetime as dt  
-import re            
+import datetime as dt
 import numpy as np
+import re
 
-# Import gspread_formatting safely
-cellFormat = None  # type: ignore
-format_cell_range = None  # type: ignore
+try:
+    import gspread  # type: ignore[import]
+    from google.oauth2.service_account import Credentials  # type: ignore[import]
+    from gspread_dataframe import set_with_dataframe, get_as_dataframe  # type: ignore[import]
+    from gspread_formatting import CellFormat, format_cell_range  # type: ignore[import]
+except ModuleNotFoundError as e:
+    # If gspread and related packages are not installed, provide fallbacks
+    # so static analysis/linting won't fail immediately. At runtime the
+    # script will still require these packages to access Google Sheets.
+    gspread = None
+    Credentials = None
+    CellFormat = None
+    def set_with_dataframe(*args, **kwargs):
+        raise ModuleNotFoundError("gspread-dataframe is required to set dataframes to Google Sheets")
+    def get_as_dataframe(*args, **kwargs):
+        raise ModuleNotFoundError("gspread-dataframe is required to read dataframes from Google Sheets")
+    # Import of gspread-formatting not available; provide no-op names
+    def format_cell_range(*args, **kwargs):
+        return None
+    print(
+        "Warning: Missing required Google Sheets packages. "
+        "Install via pip: pip install gspread google-auth gspread-dataframe gspread-formatting"
+    )
 
-gsf_spec = importlib.util.find_spec("gspread_formatting")
-if gsf_spec is not None:
-    try:
-        gsf = importlib.import_module("gspread_formatting")
-        cellFormat = getattr(gsf, "cellFormat", None)
-        format_cell_range = getattr(gsf, "format_cell_range", None)
-    except Exception:
-        cellFormat = None  # type: ignore
-        format_cell_range = None  # type: ignore
-
-if TYPE_CHECKING:
-    import gspread  # type: ignore
-    from google.oauth2.service_account import Credentials  # type: ignore
-    from gspread_dataframe import get_as_dataframe, set_with_dataframe  # type: ignore
-else:
-    try:
-        import gspread
-    except Exception:
-        gspread = None  # type: ignore
-
-    try:
-        from google.oauth2.service_account import Credentials
-    except Exception:
-        Credentials = None  # type: ignore
-
-    try:
-        from gspread_dataframe import get_as_dataframe, set_with_dataframe
-    except Exception:
-        get_as_dataframe = None  # type: ignore
-        set_with_dataframe = None  # type: ignore
-
-if get_as_dataframe is None or set_with_dataframe is None:
-    raise ImportError("The gspread_dataframe package is required. Install it with pip install gspread-dataframe")
+# If Google Sheets packages are not available, stop execution with a clear error.
+if gspread is None or Credentials is None:
+    raise ModuleNotFoundError(
+        "Missing required Google Sheets packages. "
+        "Install via pip: pip install gspread google-auth gspread-dataframe gspread-formatting"
+    )
 
 
 # =====================================================
