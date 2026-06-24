@@ -138,9 +138,9 @@ def clean_id_series(series):
 # =====================================================
 def update_screening_sheet():
     """Update SCREENING sheet with basic screening data"""
-    print("\n" + "="*70)
+    # print("\n" + "="*70)
     print("PDATING SCREENING SHEET")
-    print("="*70)
+    # print("="*70)
     
     try:
         # Open sheets
@@ -248,9 +248,9 @@ def update_screening_sheet():
 # =====================================================
 def update_cohort_sheet():
     """Update COHORT Follow-up sheet with visit dates"""
-    print("\n" + "="*70)
+    # print("\n" + "="*70)
     print("UPDATING COHORT FOLLOW-UP SHEET")
-    print("="*70)
+    # print("="*70)
     
     try:
         # Open sheets
@@ -431,9 +431,9 @@ def update_cohort_sheet():
 # =====================================================
 def main():
     """Run both sheet updates"""
-    print("\n" + "="*70)
+    # print("\n" + "="*70)
     print("CEIRR DATA SYNC - COMPLETE")
-    print("="*70)
+    # print("="*70)
     
     success_screening = update_screening_sheet()
     success_cohort = update_cohort_sheet()
