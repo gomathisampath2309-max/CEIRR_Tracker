@@ -43,15 +43,17 @@ if gspread is None or Credentials is None:
 # STEP 2: GOOGLE SHEETS AUTHENTICATION
 # =====================================================
 
-SERVICE_ACCOUNT_FILE = "service_account.json"
+# Use BASE_DIR to make the path absolute relative to this script
+SERVICE_ACCOUNT_FILE = BASE_DIR / "service_account.json"
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
+# Pass the absolute path string to the credentials method
 creds = Credentials.from_service_account_file(
-    "service_account.json",
+    str(SERVICE_ACCOUNT_FILE),
     scopes=SCOPES
 )
 
