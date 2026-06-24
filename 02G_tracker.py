@@ -6,6 +6,7 @@ import pandas as pd
 import datetime as dt
 import numpy as np
 import re
+import os
 
 try:
     import gspread  # type: ignore[import]
