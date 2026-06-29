@@ -596,6 +596,9 @@ visit_df = visit_df[
     & (visit_df["Date of confirmed visit"].dt.date <= end_date)
 ].copy()
 
+visit_df["Visit_Order"] = visit_df["Visit"].str.extract(r'(\d+)')[0].astype(int)
+visit_df = visit_df.sort_values("Visit_Order")
+
 visit_df["Date of Collection/Recruitment"] = visit_df["Date of Recruitment"]
 
 visit_df.loc[
