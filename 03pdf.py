@@ -596,8 +596,22 @@ visit_df = visit_df[
     & (visit_df["Date of confirmed visit"].dt.date <= end_date)
 ].copy()
 
-visit_df["Visit_Order"] = visit_df["Visit_Hierarchy_Status"].str.extract(r'(\d+)')[0]
-visit_df["Visit_Order"] = visit_df["Visit_Order"].fillna(1).astype(int)
+completed_visit_cols = [
+    "(V1/D1) date",
+    "(V2/D2) date",
+    "(V3/S) date",
+    "(V4/D3) date",
+]
+
+def get_visit_order(row):
+    filled = 0
+    for c in completed_visit_cols:
+        if c in visit_df.columns and pd.notna(row.get(c)) and str(row.get(c)).strip() != "":
+            filled += 1
+    return min(filled + 1, 5)
+
+visit_df["Visit_Order"] = visit_df.apply(get_visit_order, axis=1)
+visit_df = visit_df.sort_values("Visit_Order")
 
 visit_df["Date of Collection/Recruitment"] = visit_df["Date of Recruitment"]
 
