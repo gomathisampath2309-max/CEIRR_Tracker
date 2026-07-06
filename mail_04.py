@@ -14,6 +14,7 @@ def send_mail(start_date, end_date, call_pdf, visit_pdf):
     "iorv.coordinator@cmcvellore.ac.in",
     "ramit.kundu@cmcvellore.ac.in",
     "ceirr.virology@cmcvellore.ac.in",
+    "selvakumarprasad@gmail.com",
     ]
     EMAIL_PASSWORD = "fdhbuegdjjrwtype"
 
