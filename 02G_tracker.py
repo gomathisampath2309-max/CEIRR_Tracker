@@ -211,6 +211,12 @@ available_dates = sorted(
     .dropna()
     .tolist()
 )
+# Fill hospital_no from hospital_no_scan where hospital_no is empty
+if "hospital_no_scan" in df_screening.columns:
+    df_screening["hospital_no"] = df_screening["hospital_no"].where(
+        df_screening["hospital_no"].notna() & (df_screening["hospital_no"] != ""),
+        df_screening["hospital_no_scan"]
+    )
 
 # =====================================================
 # STEP 6: COLUMN MAPPING
