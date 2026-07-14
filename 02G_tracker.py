@@ -796,7 +796,7 @@ df_partial["Visit 4 - Dose 3"] = pd.NaT
 
 df_partial.loc[recruited, "Visit 4 - 3D Notification"] = (
     pd.to_datetime(
-        df_partial.loc[recruited, "Date of Collection"]
+        df_partial.loc[recruited, "Visit 1 - Dose 1"]
     )
     + pd.Timedelta(days=358)
 )
