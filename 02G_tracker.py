@@ -1,3 +1,18 @@
+import time
+
+def open_with_retry(url, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return gc.open_by_url(url)
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait = 2 ** attempt
+                print(f"Quota hit, retrying in {wait}s...")
+                time.sleep(wait)
+            else:
+                raise
+
+
 # =====================================================
 # STEP 1: IMPORT LIBRARIES
 # =====================================================
@@ -98,19 +113,21 @@ DEST_SHEET_URL_lab = "https://docs.google.com/spreadsheets/d/1uEaBqs8DoSF4X88ERq
 # STEP 4: OPEN SHEETS
 # =====================================================
 
-screening_sheet = gc.open_by_url(SCREENING_SHEET_URL).worksheet("data")
+screening_sheet = gc.open_with_retry(SCREENING_SHEET_URL).worksheet("data")
 
-recruitment_sheet = gc.open_by_url(RECRUITMENT_SHEET_URL).worksheet("data")
+recruitment_sheet = gc.open_with_retry(RECRUITMENT_SHEET_URL).worksheet("data")
 
-vaccination_sheet = gc.open_by_url(VACCINATION_SHEET_URL).worksheet("data")
+vaccination_sheet = gc.open_with_retry(VACCINATION_SHEET_URL).worksheet("data")
 
-dest_sheet = gc.open_by_url(DEST_SHEET_URL).worksheet("Database")
+dest_sheet = gc.open_with_retry(DEST_SHEET_URL).worksheet("Database")
 
-dest_sheet_lab = gc.open_by_url(DEST_SHEET_URL_lab).worksheet("SCREENING")
+_dest_lab_spreadsheet = gc.open_with_retry(DEST_SHEET_URL_lab)
 
-cohort_sheet = gc.open_by_url(DEST_SHEET_URL_lab).worksheet("COHORT Follow-up")
+dest_sheet_lab = _dest_lab_spreadsheet.worksheet("SCREENING")
 
-aravind_sheet = gc.open_by_url(DEST_SHEET_URL_lab).worksheet("Aravind details")
+cohort_sheet = _dest_lab_spreadsheet.worksheet("COHORT Follow-up")
+
+aravind_sheet = _dest_lab_spreadsheet.worksheet("Aravind details")
 
 
 # =====================================================
