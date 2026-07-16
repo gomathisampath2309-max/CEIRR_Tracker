@@ -113,15 +113,15 @@ DEST_SHEET_URL_lab = "https://docs.google.com/spreadsheets/d/1uEaBqs8DoSF4X88ERq
 # STEP 4: OPEN SHEETS
 # =====================================================
 
-screening_sheet = gc.open_with_retry(SCREENING_SHEET_URL).worksheet("data")
+screening_sheet = open_with_retry(SCREENING_SHEET_URL).worksheet("data")
 
-recruitment_sheet = gc.open_with_retry(RECRUITMENT_SHEET_URL).worksheet("data")
+recruitment_sheet = open_with_retry(RECRUITMENT_SHEET_URL).worksheet("data")
 
-vaccination_sheet = gc.open_with_retry(VACCINATION_SHEET_URL).worksheet("data")
+vaccination_sheet = open_with_retry(VACCINATION_SHEET_URL).worksheet("data")
 
-dest_sheet = gc.open_with_retry(DEST_SHEET_URL).worksheet("Database")
+dest_sheet = open_with_retry(DEST_SHEET_URL).worksheet("Database")
 
-_dest_lab_spreadsheet = gc.open_with_retry(DEST_SHEET_URL_lab)
+_dest_lab_spreadsheet = open_with_retry(DEST_SHEET_URL_lab)
 
 dest_sheet_lab = _dest_lab_spreadsheet.worksheet("SCREENING")
 
