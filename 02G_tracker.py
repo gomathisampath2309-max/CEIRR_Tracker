@@ -216,7 +216,7 @@ df_vaccination.columns = (
 # READ ARAVIND DETAILS
 # =====================================================
 
-df_aravind = get_as_dataframe(aravind_sheet).dropna(how="all")
+df_aravind = get_as_dataframe_retry(aravind_sheet).dropna(how="all")
 
 # Standardize column names
 df_aravind.columns = (
