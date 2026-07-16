@@ -12,6 +12,18 @@ def open_with_retry(url, max_retries=5):
             else:
                 raise
 
+def get_as_dataframe_retry(worksheet, max_retries=5, **kwargs):
+    for attempt in range(max_retries):
+        try:
+            return get_as_dataframe(worksheet, **kwargs)
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait = 2 ** attempt
+                print(f"Quota hit on get_as_dataframe, retrying in {wait}s...")
+                time.sleep(wait)
+            else:
+                raise
+
 
 # =====================================================
 # STEP 1: IMPORT LIBRARIES
@@ -135,7 +147,7 @@ aravind_sheet = _dest_lab_spreadsheet.worksheet("Aravind details")
 # =====================================================
 
 # Screening
-df_screening = get_as_dataframe(screening_sheet).dropna(how="all")
+df_screening = get_as_dataframe_retry(screening_sheet).dropna(how="all")
 
 df_screening.columns = (
     df_screening.columns
@@ -153,7 +165,7 @@ df_screening = df_screening.drop(
 # RECRUITMENT DATA
 # =====================================================
 
-df_recruitment = get_as_dataframe(recruitment_sheet).dropna(how="all")
+df_recruitment = get_as_dataframe_retry(recruitment_sheet).dropna(how="all")
 
 df_recruitment.columns = (
     df_recruitment.columns
@@ -191,7 +203,7 @@ else:
 # VACCINATION DATA
 # =====================================================
 
-df_vaccination = get_as_dataframe(vaccination_sheet).dropna(how="all")
+df_vaccination = get_as_dataframe_retry(vaccination_sheet).dropna(how="all")
 
 df_vaccination.columns = (
     df_vaccination.columns
@@ -454,7 +466,7 @@ df_partial.insert(
 # STEP 12: READ LAB SHEET
 # =====================================================
 
-df_lab_existing = (get_as_dataframe(dest_sheet_lab).dropna(how="all"))
+df_lab_existing = (get_as_dataframe_retry(dest_sheet_lab).dropna(how="all"))
 
 df_lab_existing.columns = (
     df_lab_existing.columns
@@ -462,7 +474,7 @@ df_lab_existing.columns = (
     .str.strip()
 )
 
-df_cohort = get_as_dataframe(cohort_sheet).dropna(how="all")
+df_cohort = get_as_dataframe_retry(cohort_sheet).dropna(how="all")
 
 df_cohort.columns = (
     df_cohort.columns
