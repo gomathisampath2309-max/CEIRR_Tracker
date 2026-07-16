@@ -798,7 +798,7 @@ df_partial.loc[recruited, "Visit 4 - 3D Notification"] = (
     pd.to_datetime(
         df_partial.loc[recruited, "Visit 1 - Dose 1"]
     )
-    + pd.Timedelta(days=358)
+    + pd.Timedelta(days=267)
 )
 
 df_partial.loc[recruited, "Visit 4 - Dose 3"] = (
