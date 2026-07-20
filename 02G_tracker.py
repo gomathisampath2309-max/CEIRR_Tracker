@@ -848,16 +848,16 @@ df_partial[
 df_partial["Visit 5 - S Notification"] = pd.NaT
 df_partial["Visit 5 - Sample"] = pd.NaT
 
-df_partial.loc[recruited_v4v5, "Visit 5 - S Notification"] = (
+df_partial.loc[recruited, "Visit 5 - S Notification"] = (
     pd.to_datetime(
-        df_partial.loc[recruited_v4v5, "Visit 4 - Dose 3"]
+        df_partial.loc[recruited, "Visit 4 - Dose 3"]
     )
     + pd.Timedelta(days=21)
 )
 
-df_partial.loc[recruited_v4v5, "Visit 5 - Sample"] = (
+df_partial.loc[recruited, "Visit 5 - Sample"] = (
     pd.to_datetime(
-        df_partial.loc[recruited_v4v5, "Visit 5 - S Notification"]
+        df_partial.loc[recruited, "Visit 5 - S Notification"]
     )
     + pd.Timedelta(days=7)
 )
