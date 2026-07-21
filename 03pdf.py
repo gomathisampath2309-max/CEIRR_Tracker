@@ -610,7 +610,27 @@ def get_visit_order(row):
             filled += 1
     return min(filled + 1, 5)
 
-visit_df["Visit_Order"] = visit_df.apply(get_visit_order, axis=1)
+visit_df["Visit_Order"] = visit_df.apply(get_visit_order, axis=1
+
+EXCLUDED_FROM_V4_V5 = {
+    "C-P002", "C-P003", "C-P009", "C-P011", "C-P013", "C-P015",
+    "C-P016", "C-P017", "C-P019", "C-P022", "C-P023", "C-P024",
+    "C-T003", "C-T011", "C-T019", "C-T049", "C-T052", "C-T060",
+    "C-T067", "C-T068", "C-T071", "C-T072", "C-T078", "C-T081",
+}
+ 
+is_excluded_id = (
+    visit_df["Recruitment ID"]
+    .astype(str)
+    .str.strip()
+    .str.upper()
+    .isin(EXCLUDED_FROM_V4_V5)
+)
+ 
+is_v4_or_v5 = visit_df["Visit_Order"].isin([4, 5])
+ 
+visit_df = visit_df[~(is_excluded_id & is_v4_or_v5)].copy()
+                                         
 visit_df = visit_df.sort_values("Visit_Order")
 
 visit_df["Date of Collection/Recruitment"] = visit_df["Date of Recruitment"]
