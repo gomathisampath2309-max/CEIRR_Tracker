@@ -728,6 +728,23 @@ recruited = (
     != ""
 )
 
+EXCLUDED_FROM_V4_V5 = {
+    "C-P002", "C-P003", "C-P009", "C-P011", "C-P013", "C-P015",
+    "C-P016", "C-P017", "C-P019", "C-P022", "C-P023", "C-P024",
+    "C-T003", "C-T011", "C-T019", "C-T049", "C-T052", "C-T060",
+    "C-T067", "C-T068", "C-T071", "C-T072", "C-T078", "C-T081",
+}
+ 
+excluded_v4_v5 = (
+    df_partial["Recruitment ID"]
+    .astype(str)
+    .str.strip()
+    .str.upper()
+    .isin(EXCLUDED_FROM_V4_V5)
+)
+ 
+recruited_for_v4_v5 = recruited & ~excluded_v4_v5
+
 # =====================================================
 # VISIT 1 (ALL RECORDS)
 # =====================================================
@@ -823,16 +840,16 @@ df_partial[
 df_partial["Visit 4 - 3D Notification"] = pd.NaT
 df_partial["Visit 4 - Dose 3"] = pd.NaT
 
-df_partial.loc[recruited, "Visit 4 - 3D Notification"] = (
+df_partial.loc[recruited_for_v4_v5, "Visit 4 - 3D Notification"] = (
     pd.to_datetime(
-        df_partial.loc[recruited, "Visit 1 - Dose 1"]
+        df_partial.loc[recruited_for_v4_v5, "Visit 1 - Dose 1"]
     )
     + pd.Timedelta(days=267)
 )
 
-df_partial.loc[recruited, "Visit 4 - Dose 3"] = (
+df_partial.loc[recruited_for_v4_v5, "Visit 4 - Dose 3"] = (
     pd.to_datetime(
-        df_partial.loc[recruited, "Visit 4 - 3D Notification"]
+        df_partial.loc[recruited_for_v4_v5, "Visit 4 - 3D Notification"]
     )
     + pd.Timedelta(days=7)
 )
@@ -848,16 +865,16 @@ df_partial[
 df_partial["Visit 5 - S Notification"] = pd.NaT
 df_partial["Visit 5 - Sample"] = pd.NaT
 
-df_partial.loc[recruited, "Visit 5 - S Notification"] = (
+df_partial.loc[recruited_for_v4_v5, "Visit 5 - S Notification"] = (
     pd.to_datetime(
-        df_partial.loc[recruited, "Visit 4 - Dose 3"]
+        df_partial.loc[recruited_for_v4_v5, "Visit 4 - Dose 3"]
     )
     + pd.Timedelta(days=21)
 )
 
-df_partial.loc[recruited, "Visit 5 - Sample"] = (
+df_partial.loc[recruited_for_v4_v5, "Visit 5 - Sample"] = (
     pd.to_datetime(
-        df_partial.loc[recruited, "Visit 5 - S Notification"]
+        df_partial.loc[recruited_for_v4_v5, "Visit 5 - S Notification"]
     )
     + pd.Timedelta(days=7)
 )
