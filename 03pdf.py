@@ -610,7 +610,7 @@ def get_visit_order(row):
             filled += 1
     return min(filled + 1, 5)
 
-visit_df["Visit_Order"] = visit_df.apply(get_visit_order, axis=1
+visit_df["Visit_Order"] = visit_df.apply(get_visit_order, axis=1)
 
 EXCLUDED_FROM_V4_V5 = {
     "C-P002", "C-P003", "C-P009", "C-P011", "C-P013", "C-P015",
